@@ -1,0 +1,21 @@
+const { validationResult } = require('express-validator')
+const { chain } = require('lodash')
+
+const middleware = (request, response, next) => {
+  const errors = validationResult(request)
+  if (!errors.isEmpty()) {
+    return response.status(422).json({
+      message: 'Please fix the following errore',
+      errors: chain(
+        errors.mapped({
+          onlyFirstError: true,
+        }),
+      ).keyBy('param')
+        .mapValues('msg')
+        .value(),
+    })
+  }
+  return next()
+}
+// eslint-disable-next-line func-names
+module.exports = () => middleware
